@@ -1,2 +1,5 @@
 *.pyc
 .idea/
+**/_build/
+**/_static
+**/_templates
