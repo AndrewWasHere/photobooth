@@ -9,75 +9,67 @@ https://opensource.org/licenses/BSD-3-Clause
 import ConfigParser
 import argparse
 from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.layout import Layout
-
-import camera
+from kivy.uix.screenmanager import Screen, ScreenManager
+from kivy.logger import Logger
 
 
-class WaitingLayout(BoxLayout):
+class WaitingScreen(Screen):
     """Waiting state widget.
 
-    +-----------------+
-    |   Photobooth    |
-    |                 |
-    | Press to start. |
-    |                 |
-    +-----------------+
+    Defined in photobooth.kv
     """
 
 
-class CountdownLayout(Layout):
+class CountdownScreen(Screen):
     """Countdown state widget.
 
-    +-----------------+
-    |                 |
-    |        5        |
-    |                 |
-    |                 |
-    +-----------------+
+    Defined in photobooth.kv
     """
 
 
-class CheeseLayout(Layout):
+class CheeseScreen(Screen):
     """Cheese state widget.
 
-    +-----------------+
-    |                 |
-    |     Cheese!     |
-    |                 |
-    |                 |
-    +-----------------+
+    Defined in photobooth.kv
     """
 
 
-class SelectingLayout(Layout):
+class SelectingScreen(Screen):
     """Selecting state widget.
 
-    +-----------------+
-    |+---+ +---+ +---+|
-    || 1 | | 2 | | 3 ||
-    |+---+ +---+ +---+|
-    ||Print|  |Cancel||
-    +-----------------+
+    Defined in photobooth.kv
     """
 
 
-class PrintingWidget(Layout):
+class PrintingScreen(Screen):
     """Printing state widget.
 
-    +-----------------+
-    |                 |
-    |   Printing...   |
-    |                 |
-    |                 |
-    +-----------------+
+    Defined in photobooth.kv
+    """
+
+
+class Screens(ScreenManager):
+    """Screen Manager for the photobooth screens.
+
+    Defined in photobooth.kv
     """
 
 
 class PhotoboothApp(App):
+    def __init__(self, settings, **kwargs):
+        Logger.info('PhotoboothApp: __init__()')
+        super(PhotoboothApp, self).__init__(**kwargs)
+        self.settings = settings
+        self.sm = None
+
     def build(self):
-        return WaitingLayout()
+        """Build UI.
+
+        User interface objects stored in the app must be created here, not in
+        __init__().
+        """
+        self.sm = Screens()
+        return self.sm
 
 
 class PhotoboothSettings(object):
@@ -137,6 +129,10 @@ def parse_command_line():
         )
     )
 
-if __name__ == '__main__':
+
+def main():
     settings = parse_command_line()
-    PhotoboothApp().run()
+    PhotoboothApp(settings).run()
+
+if __name__ == '__main__':
+    main()

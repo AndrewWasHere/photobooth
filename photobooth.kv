@@ -1,36 +1,96 @@
 #:kivy 1.9.0
 
-<WaitingLayout>:
-    padding: 0
-    spacing: 0
-    Button:
-        text: '\nPhotobooth\n==========\n\n\nPress to begin.'
-        text_size: self.size
-        halign: 'center'
-        valign: 'top'
-        size_hint: 1, 1
-        font_size: 50
+<WaitingScreen>:
+    # +-----------------+
+    # |   Photobooth    |
+    # |                 |
+    # | Press to begin. |
+    # |                 |
+    # +-----------------+
+    name: 'waiting'
+    BoxLayout:
+        Button:
+            text: '\nPhotobooth\n==========\n\n\nPress to begin.'
+            text_size: self.size
+            halign: 'center'
+            valign: 'top'
+            size_hint: 1, 1
+            font_size: 50
 
-<CountdownLayout>:
-    canvas:
-        Rectangle:
-            pos: self.pos
-            size: self.size
+<CountdownScreen>:
+    # +-----------------+
+    # |                 |
+    # |        5        |
+    # |                 |
+    # |                 |
+    # +-----------------+
+    name: 'countdown'
+    BoxLayout:
+        Label:
+            text: '5'
+            halign: 'center'
+            valign: 'middle'
+            size_hint: 1, 1
+            font_size: 50
 
-<CheeseLayout>:
-    canvas:
-        Rectangle:
-            pos: self.pos
-            size: self.size
+<CheeseScreen>:
+    # +-----------------+
+    # |                 |
+    # |     Cheese!     |
+    # |                 |
+    # |                 |
+    # +-----------------+
+    name: 'cheese'
+    BoxLayout:
+        Label:
+            text: 'Cheese!'
+            halign: 'center'
+            valign: 'middle'
+            size_hint: 1, 1
+            font_size: 50
 
-<SelectingLayout>:
-    canvas:
-        Rectangle:
-            pos: self.pos
-            size: self.size
+<SelectingScreen>:
+    # +-----------------+
+    # |+---+ +---+ +---+|
+    # || 1 | | 2 | | 3 ||
+    # |+---+ +---+ +---+|
+    # ||Print|  |Cancel||
+    # +-----------------+
+    name: 'selecting'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            Button:
+                text: 'Image 1'
+            Button:
+                text: 'Image 2'
+            Button:
+                text: 'Image 3'
+        BoxLayout:
+            Button:
+                text: 'Print'
+            Button:
+                text: 'Cancel'
 
-<PrintingLayout>:
-    canvas:
-        Rectangle:
-            pos: self.pos
-            size: self.size
+<PrintingScreen>:
+    # +-----------------+
+    # |                 |
+    # |   Printing...   |
+    # |                 |
+    # |                 |
+    # +-----------------+
+    name: 'printing'
+    BoxLayout:
+        Label:
+            text: 'Printing...'
+            halign: 'center'
+            valign: 'middle'
+            size_hint: 1, 1
+            font_size: 50
+
+<Screens>:
+    WaitingScreen:
+    CountdownScreen:
+    CheeseScreen:
+    SelectingScreen:
+    PrintingScreen:
