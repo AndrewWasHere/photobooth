@@ -9,7 +9,7 @@ https://opensource.org/licenses/BSD-3-Clause
 import ConfigParser
 import argparse
 from kivy.app import App
-from kivy.uix.screenmanager import Screen, ScreenManager
+from kivy.uix.screenmanager import Screen, ScreenManager, NoTransition
 from kivy.logger import Logger
 
 
@@ -53,6 +53,8 @@ class Screens(ScreenManager):
 
     Defined in photobooth.kv
     """
+    def __init__(self, **kwargs):
+        super(Screens, self).__init__(**kwargs)
 
 
 class PhotoboothApp(App):
@@ -61,6 +63,7 @@ class PhotoboothApp(App):
         super(PhotoboothApp, self).__init__(**kwargs)
         self.settings = settings
         self.sm = None
+        self.count = 0
 
     def build(self):
         """Build UI.
@@ -68,8 +71,13 @@ class PhotoboothApp(App):
         User interface objects stored in the app must be created here, not in
         __init__().
         """
-        self.sm = Screens()
+        self.sm = Screens(transition=NoTransition())
         return self.sm
+
+    def start_event(self):
+        """Waiting screen start button pressed."""
+        Logger.info('Waiting: Start button pressed.')
+        self.sm.current = 'countdown'
 
 
 class PhotoboothSettings(object):
