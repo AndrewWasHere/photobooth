@@ -19,22 +19,28 @@ a photo-taking state, a photo selecting state, and a printing state.
 
 .. uml::
 
-@startuml
-[*] --> waiting
-waiting : on entry: display start screen
-waiting --> shooting : start event
+    @startuml
+    [*] --> waiting
+    waiting : on entry: display start screen
+    waiting --> shooting : start event
 
-state shooting {
-[*] --> countdown
-countdown : on entry: update time remaining
-countdown --> countdown : update[time remaining]
-countdown --> cheese : update[no time remaining]
-cheese : on entry: take photo
-cheese --> countdown : photo downloaded[pictures remaining]
-}
-cheese --> selecting : photo downloaded[no pictures remaining]
-selecting --> printing : print event
-selecting --> waiting : cancel event
-printing --> waiting : print complete
-printing : on entry: print photo
-@enduml
+    state shooting {
+    [*] --> countdown
+    countdown : on entry: update time remaining
+    countdown --> countdown : update[time remaining]
+    countdown --> cheese : update[no time remaining]
+    cheese : on entry: take photo
+    cheese --> countdown : photo downloaded[pictures remaining]
+    }
+    cheese --> selecting : photo downloaded[no pictures remaining]
+    selecting --> printing : print event
+    selecting --> waiting : cancel event
+    printing --> waiting : print complete
+    printing : on entry: print photo
+    @enduml
+
+Kivy
+====
+
+Kivy has a clock module for one-shot and periodic timer events.
+ScreenManager manages multiple screens in an application

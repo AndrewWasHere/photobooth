@@ -19,8 +19,8 @@ def capture(filename):
         filename (str): File path to save image to.
 
     Returns:
-        saved (str): File path saved. If more than one file is saved (raw and
-        jpeg, for instance), a list is returned.
+        saved (str or list): File path saved. If more than one file is saved
+        (raw and jpeg, for instance), a list is returned.
 
     Raises:
         subprocess.CalledProcessError: camera call failed.

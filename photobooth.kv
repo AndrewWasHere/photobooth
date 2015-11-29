@@ -1,0 +1,36 @@
+#:kivy 1.9.0
+
+<WaitingLayout>:
+    padding: 0
+    spacing: 0
+    Button:
+        text: '\nPhotobooth\n==========\n\n\nPress to begin.'
+        text_size: self.size
+        halign: 'center'
+        valign: 'top'
+        size_hint: 1, 1
+        font_size: 50
+
+<CountdownLayout>:
+    canvas:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<CheeseLayout>:
+    canvas:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<SelectingLayout>:
+    canvas:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<PrintingLayout>:
+    canvas:
+        Rectangle:
+            pos: self.pos
+            size: self.size

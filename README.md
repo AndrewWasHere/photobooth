@@ -18,7 +18,7 @@ Requirements
 * Raspberry Pi running Raspian Jessie or newer.
 * Raspberry Pi touchscreen.
 * Python 2.7. (I could not get Kivy to work with Python 3)
-* Kivy (http://kivy.org) for Python.
+* Kivy 1.9.0 (http://kivy.org) for Python.
 * gphoto2 command line application, and libgphoto2.
 * gphoto2-compatible camera (tested with Canon D300 / Digital Rebel)
 * Photo printer (tested with Canon Selphy 910).

@@ -6,12 +6,137 @@ This software is licensed under the BSD 3-Clause License.
 See LICENSE.txt at the root of the project or
 https://opensource.org/licenses/BSD-3-Clause
 """
+import ConfigParser
+import argparse
+from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.layout import Layout
+
 import camera
 
 
-def main():
-    """Run the photobooth."""
-    camera.capture('/tmp/foo.%C')
+class WaitingLayout(BoxLayout):
+    """Waiting state widget.
+
+    +-----------------+
+    |   Photobooth    |
+    |                 |
+    | Press to start. |
+    |                 |
+    +-----------------+
+    """
+
+
+class CountdownLayout(Layout):
+    """Countdown state widget.
+
+    +-----------------+
+    |                 |
+    |        5        |
+    |                 |
+    |                 |
+    +-----------------+
+    """
+
+
+class CheeseLayout(Layout):
+    """Cheese state widget.
+
+    +-----------------+
+    |                 |
+    |     Cheese!     |
+    |                 |
+    |                 |
+    +-----------------+
+    """
+
+
+class SelectingLayout(Layout):
+    """Selecting state widget.
+
+    +-----------------+
+    |+---+ +---+ +---+|
+    || 1 | | 2 | | 3 ||
+    |+---+ +---+ +---+|
+    ||Print|  |Cancel||
+    +-----------------+
+    """
+
+
+class PrintingWidget(Layout):
+    """Printing state widget.
+
+    +-----------------+
+    |                 |
+    |   Printing...   |
+    |                 |
+    |                 |
+    +-----------------+
+    """
+
+
+class PhotoboothApp(App):
+    def build(self):
+        return WaitingLayout()
+
+
+class PhotoboothSettings(object):
+    """Container for settings."""
+    def __init__(self, skip_select, initial_wait_time, wait_time):
+        self.skip_select = skip_select
+        self.initial_wait_time = initial_wait_time
+        self.wait_time = wait_time
+
+
+def parse_command_line():
+    """Get settings from command line and/or config file."""
+    config = ConfigParser.RawConfigParser()
+    config.readfp(open('photobooth_defaults.cfg'))
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--config',
+        default=None,
+        help='Path to config file (command line arguments override settings).'
+    )
+    parser.add_argument(
+        '--skip-select',
+        action='store_true',
+        help='Skip photo selection, and print all.'
+    )
+    parser.add_argument(
+        '--initial-wait-time',
+        type=int,
+        default=None,
+        help='Time to wait after start button pressed before first photo.'
+    )
+    parser.add_argument(
+        '--wait-time',
+        type=int,
+        default=None,
+        help='Time to wait between photos, after camera processing complete.'
+    )
+    args = parser.parse_args()
+    if args.config:
+        config.read(args.config)
+
+    return PhotoboothSettings(
+        skip_select=(
+            args.skip_select or
+            config.getboolean('photobooth', 'skip-select')
+        ),
+        initial_wait_time=(
+            args.initial_wait_time
+            if args.initial_wait_time is not None else
+            config.getint('photobooth', 'initial-wait-time')
+        ),
+        wait_time=(
+            args.wait_time
+            if args.wait_time is not None else
+            config.getint('photobooth', 'initial-wait-time')
+        )
+    )
 
 if __name__ == '__main__':
-    main()
+    settings = parse_command_line()
+    PhotoboothApp().run()
