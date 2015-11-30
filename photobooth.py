@@ -70,25 +70,26 @@ class PhotoboothApp(App):
     def photo_event(self):
         """Time to take a picture."""
         Logger.info('PhotoboothApp: photo_event().')
-        # if self.state_machine.state not in (
-        #     PhotoboothState.COUNTDOWN1,
-        #     PhotoboothState.COUNTDOWN2,
-        #     PhotoboothState.COUNTDOWN3
-        # ):
-        #     Logger.error(
-        #         'photo event occured in state %s',
-        #         self.state_machine.state
-        #     )
-        #     return
-        #
-        # if self.state_machine.state == PhotoboothState.COUNTDOWN1:
-        #     self.state_machine.transition_to(PhotoboothState.PHOTO1)
-        # elif self.state_machine.state == PhotoboothState.COUNTDOWN2:
-        #     self.state_machine.transition_to(PhotoboothState.PHOTO2)
-        # else:
-        #     self.state_machine.transition_to(PhotoboothState.PHOTO3)
-        #
-        # self.sm.current = ScreenMgr.CHEESE
+        if self.state_machine.state not in (
+            PhotoboothState.COUNTDOWN1,
+            PhotoboothState.COUNTDOWN2,
+            PhotoboothState.COUNTDOWN3
+        ):
+            Logger.error(
+                'photo event occurred unexpectedly in state %s',
+                self.state_machine.state
+            )
+            return
+
+        if self.state_machine.state == PhotoboothState.COUNTDOWN1:
+            self.state_machine.transition_to(PhotoboothState.PHOTO1)
+        elif self.state_machine.state == PhotoboothState.COUNTDOWN2:
+            self.state_machine.transition_to(PhotoboothState.PHOTO2)
+        else:
+            self.state_machine.transition_to(PhotoboothState.PHOTO3)
+
+        self.sm.pb_screens[ScreenMgr.CHEESE].random_smile()
+        self.sm.current = ScreenMgr.CHEESE
 
 
 class PhotoboothSettings(object):

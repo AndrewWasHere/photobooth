@@ -6,6 +6,7 @@ This software is licensed under the BSD 3-Clause License.
 See LICENSE.txt at the root of the project or
 https://opensource.org/licenses/BSD-3-Clause
 """
+import random
 from kivy.clock import Clock
 from kivy.logger import Logger
 from kivy.uix.boxlayout import BoxLayout
@@ -16,14 +17,15 @@ from kivy.uix.screenmanager import Screen, ScreenManager
 
 class ScreenMgr(ScreenManager):
     """Screen Manager for the photobooth screens."""
+    # Screen names.
     WAITING = 'waiting'
     COUNTDOWN = 'countdown'
+    CHEESE = 'cheese'
 
     def __init__(self, app, **kwargs):
         """
         Args:
             app (kivy.App):
-            **kwargs (dict): ScreenManager parameters.
 
         Returns:
 
@@ -33,7 +35,8 @@ class ScreenMgr(ScreenManager):
         self.app = app
         self.pb_screens = {
             self.WAITING: WaitingScreen(app, name=self.WAITING),
-            self.COUNTDOWN: CountdownScreen(app, name=self.COUNTDOWN)
+            self.COUNTDOWN: CountdownScreen(app, name=self.COUNTDOWN),
+            self.CHEESE: CheeseScreen(app, name=self.CHEESE)
         }
         for screen in self.pb_screens.itervalues():
             self.add_widget(screen)
@@ -51,17 +54,16 @@ class WaitingScreen(Screen):
     |                 |
     +-----------------+
     """
-    def __init__(self, app, *args, **kwargs):
+    def __init__(self, app, **kwargs):
         """
         Args:
             app (kivy.App):
-            **kwargs:
 
         Returns:
 
         """
         Logger.info('WaitingScreen: __init__().')
-        super(WaitingScreen, self).__init__(*args, **kwargs)
+        super(WaitingScreen, self).__init__(**kwargs)
 
         self.app = app
         self.start_button = Button(
@@ -92,9 +94,16 @@ class CountdownScreen(Screen):
     |                 |
     +-----------------+
     """
-    def __init__(self, app, *args, **kwargs):
+    def __init__(self, app, **kwargs):
+        """
+        Args:
+            app (kivy.App):
+
+        Returns:
+
+        """
         Logger.info('CountdownScreen: __init__().')
-        super(CountdownScreen, self).__init__(*args, **kwargs)
+        super(CountdownScreen, self).__init__(**kwargs)
 
         self.app = app
         self.time_remaining = 5
@@ -102,7 +111,7 @@ class CountdownScreen(Screen):
             text=str(self.time_remaining),
             # text_size=self.size,
             halign='center',
-            valign='top',
+            valign='middle',
             font_size=50
         )
         self.layout = BoxLayout()
@@ -120,6 +129,7 @@ class CountdownScreen(Screen):
             self.app.photo_event()
 
     def start_countdown(self, time):
+        Logger.info('CountdownScreen: start_countdown(%s)', time)
         self.time_remaining = time
         self.time_remaining_label.text = str(self.time_remaining)
         Clock.schedule_once(self.timer_event, 1)
@@ -128,8 +138,39 @@ class CountdownScreen(Screen):
 class CheeseScreen(Screen):
     """Cheese state widget.
 
-    Defined in photobooth.kv
+    +-----------------+
+    |                 |
+    |     Cheese!     |
+    |                 |
+    |                 |
+    +-----------------+
     """
+    smile = ['Cheese!', 'Smile!', 'Albatross!', 'Rutabega!', 'Gesundheit!']
+
+    def __init__(self, app, **kwargs):
+        """
+        Args:
+            app:
+
+        Returns:
+
+        """
+        Logger.info('CheeseScreen: __init__().')
+        super(CheeseScreen, self).__init__(**kwargs)
+
+        self.app = app
+        self.smile_label = Label(
+            text=self.smile[0],
+            halign='center',
+            valign='middle',
+            font_size=50,
+        )
+        self.layout = BoxLayout()
+        self.layout.add_widget(self.smile_label)
+        self.add_widget(self.layout)
+
+    def random_smile(self):
+        self.smile_label.text = random.choice(self.smile)
 
 
 class SelectingScreen(Screen):
