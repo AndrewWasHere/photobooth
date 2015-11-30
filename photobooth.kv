@@ -1,39 +1,5 @@
 #:kivy 1.9.0
 
-<WaitingScreen>:
-    # +-----------------+
-    # |   Photobooth    |
-    # |                 |
-    # | Press to begin. |
-    # |                 |
-    # +-----------------+
-    name: 'waiting'
-    BoxLayout:
-        Button:
-            text: '\nPhotobooth\n==========\n\n\nPress to begin.'
-            text_size: self.size
-            halign: 'center'
-            valign: 'top'
-            size_hint: 1, 1
-            font_size: 50
-            on_release: app.start_event()
-
-<CountdownScreen>:
-    # +-----------------+
-    # |                 |
-    # |        5        |
-    # |                 |
-    # |                 |
-    # +-----------------+
-    name: 'countdown'
-    BoxLayout:
-        Label:
-            text: '5'
-            halign: 'center'
-            valign: 'middle'
-            size_hint: 1, 1
-            font_size: 50
-
 <CheeseScreen>:
     # +-----------------+
     # |                 |
@@ -88,10 +54,3 @@
             valign: 'middle'
             size_hint: 1, 1
             font_size: 50
-
-<ScreenMgr>:
-    WaitingScreen:
-    CountdownScreen:
-    CheeseScreen:
-    SelectingScreen:
-    PrintingScreen:

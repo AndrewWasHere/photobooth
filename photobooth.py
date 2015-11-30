@@ -41,11 +41,11 @@ class PhotoboothState(object):
 
 class PhotoboothApp(App):
     def __init__(self, settings, **kwargs):
-        Logger.info('PhotoboothApp: __init__()')
+        Logger.info('PhotoboothApp: __init__().')
         super(PhotoboothApp, self).__init__(**kwargs)
         self.settings = settings
         self.sm = None
-        self.state = PhotoboothState()
+        self.state_machine = PhotoboothState()
         self.countdown = None
 
     def build(self):
@@ -54,14 +54,41 @@ class PhotoboothApp(App):
         User interface objects stored in the app must be created here, not in
         __init__().
         """
-        self.sm = ScreenMgr(transition=NoTransition())
+        Logger.info('PhotoboothApp: build().')
+        self.sm = ScreenMgr(self, transition=NoTransition())
         return self.sm
 
     def start_event(self):
         """Waiting screen start button pressed."""
-        Logger.info('Waiting: Start button pressed.')
-        self.state.transition_to(PhotoboothState.COUNTDOWN1)
-        self.sm.current = 'countdown'
+        Logger.info('PhotoboothApp: start_event().')
+        self.state_machine.transition_to(PhotoboothState.COUNTDOWN1)
+        self.sm.pb_screens[ScreenMgr.COUNTDOWN].start_countdown(
+            self.settings.initial_wait_time
+        )
+        self.sm.current = ScreenMgr.COUNTDOWN
+
+    def photo_event(self):
+        """Time to take a picture."""
+        Logger.info('PhotoboothApp: photo_event().')
+        # if self.state_machine.state not in (
+        #     PhotoboothState.COUNTDOWN1,
+        #     PhotoboothState.COUNTDOWN2,
+        #     PhotoboothState.COUNTDOWN3
+        # ):
+        #     Logger.error(
+        #         'photo event occured in state %s',
+        #         self.state_machine.state
+        #     )
+        #     return
+        #
+        # if self.state_machine.state == PhotoboothState.COUNTDOWN1:
+        #     self.state_machine.transition_to(PhotoboothState.PHOTO1)
+        # elif self.state_machine.state == PhotoboothState.COUNTDOWN2:
+        #     self.state_machine.transition_to(PhotoboothState.PHOTO2)
+        # else:
+        #     self.state_machine.transition_to(PhotoboothState.PHOTO3)
+        #
+        # self.sm.current = ScreenMgr.CHEESE
 
 
 class PhotoboothSettings(object):
