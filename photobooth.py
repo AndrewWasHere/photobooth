@@ -9,52 +9,34 @@ https://opensource.org/licenses/BSD-3-Clause
 import ConfigParser
 import argparse
 from kivy.app import App
-from kivy.uix.screenmanager import Screen, ScreenManager, NoTransition
 from kivy.logger import Logger
+from kivy.uix.screenmanager import NoTransition
+
+from ui import ScreenMgr
 
 
-class WaitingScreen(Screen):
-    """Waiting state widget.
+class PhotoboothState(object):
+    WAITING = 'waiting state'
+    COUNTDOWN1 = 'countdown 1 state'
+    PHOTO1 = 'photo 1 state'
+    COUNTDOWN2 = 'countdown 2 state'
+    PHOTO2 = 'photo 2 state'
+    COUNTDOWN3 = 'countdown 3 state'
+    PHOTO3 = 'photo 3 state'
+    SELECTING = 'selecting state'
+    PRINTING = 'printing state'
 
-    Defined in photobooth.kv
-    """
+    def __init__(self):
+        self.state = self.WAITING
+        Logger.info('State Machine: Initialized to state %s', self.state)
 
-
-class CountdownScreen(Screen):
-    """Countdown state widget.
-
-    Defined in photobooth.kv
-    """
-
-
-class CheeseScreen(Screen):
-    """Cheese state widget.
-
-    Defined in photobooth.kv
-    """
-
-
-class SelectingScreen(Screen):
-    """Selecting state widget.
-
-    Defined in photobooth.kv
-    """
-
-
-class PrintingScreen(Screen):
-    """Printing state widget.
-
-    Defined in photobooth.kv
-    """
-
-
-class Screens(ScreenManager):
-    """Screen Manager for the photobooth screens.
-
-    Defined in photobooth.kv
-    """
-    def __init__(self, **kwargs):
-        super(Screens, self).__init__(**kwargs)
+    def transition_to(self, new_state):
+        Logger.info(
+            'State Machine: Transitioning from "%s" to "%s"',
+            self.state,
+            new_state
+        )
+        self.state = new_state
 
 
 class PhotoboothApp(App):
@@ -63,7 +45,8 @@ class PhotoboothApp(App):
         super(PhotoboothApp, self).__init__(**kwargs)
         self.settings = settings
         self.sm = None
-        self.count = 0
+        self.state = PhotoboothState()
+        self.countdown = None
 
     def build(self):
         """Build UI.
@@ -71,12 +54,13 @@ class PhotoboothApp(App):
         User interface objects stored in the app must be created here, not in
         __init__().
         """
-        self.sm = Screens(transition=NoTransition())
+        self.sm = ScreenMgr(transition=NoTransition())
         return self.sm
 
     def start_event(self):
         """Waiting screen start button pressed."""
         Logger.info('Waiting: Start button pressed.')
+        self.state.transition_to(PhotoboothState.COUNTDOWN1)
         self.sm.current = 'countdown'
 
 
