@@ -14,6 +14,9 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import Screen, ScreenManager
 
+LARGE_FONT = 130
+SMALL_FONT = 50
+
 
 class ScreenMgr(ScreenManager):
     """Screen Manager for the photobooth screens."""
@@ -75,7 +78,7 @@ class WaitingScreen(Screen):
             # text_size=self.size,
             halign='center',
             valign='top',
-            font_size=50
+            font_size=SMALL_FONT
         )
         self.start_button.bind(on_release=self.start_event)
 
@@ -116,7 +119,7 @@ class CountdownScreen(Screen):
             # text_size=self.size,
             halign='center',
             valign='middle',
-            font_size=50
+            font_size=LARGE_FONT
         )
         self.layout = BoxLayout()
         self.layout.add_widget(self.time_remaining_label)
@@ -149,7 +152,30 @@ class CheeseScreen(Screen):
     |                 |
     +-----------------+
     """
-    smile = ['Cheese!', 'Smile!', 'Albatross!', 'Rutabega!', 'Gesundheit!']
+    smile = [
+        'Cheese!',
+        'Smile!',
+        'Albatross!',
+        'Rutabega!',
+        'Bumfuzzle!',
+        'Gardyloo!',
+        'Taradiddle!',
+        'Widdershins!',
+        'Diphthong!'
+    ]
+    waiting = [
+        '',
+        'Processing...',
+        '',
+        'Still processing...',
+        '',
+        'Waiting on the camera...',
+        '',
+        'Almost done...',
+        '',
+        'Any second now...',
+        ''
+    ]
 
     def __init__(self, app, **kwargs):
         """
@@ -167,19 +193,31 @@ class CheeseScreen(Screen):
             text=self.smile[0],
             halign='center',
             valign='middle',
-            font_size=50,
+            font_size=LARGE_FONT
         )
         self.layout = BoxLayout()
         self.layout.add_widget(self.smile_label)
         self.add_widget(self.layout)
 
+        self.wait_idx = 0
+        self.wait_count = 0
+
     def on_entry(self):
+        self.smile_label.font_size = LARGE_FONT
         self.smile_label.text = random.choice(self.smile)
-        Clock.schedule_once(self.timer_event, 1)
+        self.wait_idx = -1
+        self.wait_count = 0
+        Clock.schedule_once(self.timer_event, 2)
 
     def timer_event(self, obj):
         Logger.info('CheeseScreen: timer_event()')
         if self.app.camera_processing():
+            self.wait_count += 1
+            if self.wait_count % 3 == 0:
+                self.wait_idx = (self.wait_idx + 1) % len(self.waiting)
+                self.smile_label.font_size = SMALL_FONT
+                self.smile_label.text = self.waiting[self.wait_idx]
+
             Clock.schedule_once(self.timer_event, 1)
         else:
             self.app.photo_complete_event()
