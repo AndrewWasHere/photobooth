@@ -1,5 +1,5 @@
 """
-Copyright 2015, andrew
+Copyright 2015, Andrew Lin
 All rights reserved.
 
 This software is licensed under the BSD 3-Clause License.
@@ -12,31 +12,8 @@ from kivy.logger import Logger
 from kivy.uix.screenmanager import NoTransition
 
 from camera import camera
-from ui import ScreenMgr
-
-
-class PhotoboothState(object):
-    WAITING = 'waiting state'
-    COUNTDOWN1 = 'countdown 1 state'
-    PHOTO1 = 'photo 1 state'
-    COUNTDOWN2 = 'countdown 2 state'
-    PHOTO2 = 'photo 2 state'
-    COUNTDOWN3 = 'countdown 3 state'
-    PHOTO3 = 'photo 3 state'
-    SELECTING = 'selecting state'
-    PRINTING = 'printing state'
-
-    def __init__(self):
-        self.state = self.WAITING
-        Logger.info('State Machine: Initialized to state %s', self.state)
-
-    def transition_to(self, new_state):
-        Logger.info(
-            'State Machine: Transitioning from "%s" to "%s"',
-            self.state,
-            new_state
-        )
-        self.state = new_state
+from ui.photoboothstate import PhotoboothState
+from ui.screens import ScreenMgr
 
 
 class PhotoboothApp(App):
@@ -61,7 +38,7 @@ class PhotoboothApp(App):
     def build(self):
         """Build UI.
 
-        User interface objects stored in the app must be created here, not in
+        User interface objects stored in the photoboothapp must be created here, not in
         __init__().
         """
         Logger.info('PhotoboothApp: build().')
@@ -89,6 +66,8 @@ class PhotoboothApp(App):
                 'photo event occurred unexpectedly in "%s"',
                 self.state_machine.state
             )
+            self.sm.current = ScreenMgr.WAITING
+            self.state_machine.transition_to(PhotoboothState.WAITING)
             return
 
         if self.state_machine.state == PhotoboothState.COUNTDOWN1:
@@ -122,6 +101,8 @@ class PhotoboothApp(App):
                 'photo complete event occurred unexpectedly in "%s"',
                 self.state_machine.state
             )
+            self.sm.current = ScreenMgr.WAITING
+            self.state_machine.transition_to(PhotoboothState.WAITING)
             return
 
         if self.state_machine.state == PhotoboothState.PHOTO1:
@@ -142,9 +123,39 @@ class PhotoboothApp(App):
                 self.sm.current = ScreenMgr.PRINTING
             else:
                 state = PhotoboothState.SELECTING
+                self.sm.pb_screens[ScreenMgr.SELECTING].on_entry()
                 self.sm.current = ScreenMgr.SELECTING
 
         self.state_machine.transition_to(state)
+
+    def cancel_event(self):
+        """Session canceled."""
+        Logger.info('PhotoboothApp: cancel_event().')
+
+        if self.state_machine.state != PhotoboothState.SELECTING:
+            Logger.error(
+                'cancel event occurred unexpectedly in "%s"',
+                self.state_machine.state
+            )
+
+        self.sm.current = ScreenMgr.WAITING
+        self.state_machine.transition_to(PhotoboothState.WAITING)
+
+    def print_event(self):
+        """Print request."""
+        Logger.info('PhotoboothApp: print_event().')
+
+        if self.state_machine.state != PhotoboothState.SELECTING:
+            Logger.error(
+                'print event occurred unexpectedly in "%s"',
+                self.state_machine.state
+            )
+            self.sm.current = ScreenMgr.WAITING
+            self.state_machine.transition_to(PhotoboothState.WAITING)
+            return
+
+        self.sm.current = ScreenMgr.PRINTING
+        self.state_machine.transition_to(PhotoboothState.PRINTING)
 
     def camera_processing(self):
         """Check to see if camera is still processing the photo."""

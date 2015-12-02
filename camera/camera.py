@@ -1,5 +1,5 @@
 """
-Copyright 2015, andrew
+Copyright 2015, Andrew Lin
 All rights reserved.
 
 This software is licensed under the BSD 3-Clause License.
@@ -8,6 +8,8 @@ https://opensource.org/licenses/BSD-3-Clause
 """
 import shlex
 import subprocess
+
+from kivy.logger import Logger
 
 
 def capture(filename):
@@ -54,6 +56,7 @@ def capture_background(filename):
     Returns:
         process (subprocess.Popen)
     """
+    Logger.info('camera: capture_background(%s)', filename)
     cmd = (
         'gphoto2 '
         '--capture-image-and-download '

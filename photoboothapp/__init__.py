@@ -1,5 +1,5 @@
 """
-Copyright 2015, Andrew Lin
+Copyright 2015, andrew
 All rights reserved.
 
 This software is licensed under the BSD 3-Clause License.

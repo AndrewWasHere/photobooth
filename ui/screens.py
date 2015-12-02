@@ -1,18 +1,22 @@
 """
-Copyright 2015, andrew
+Copyright 2015, Andrew Lin
 All rights reserved.
 
 This software is licensed under the BSD 3-Clause License.
 See LICENSE.txt at the root of the project or
 https://opensource.org/licenses/BSD-3-Clause
 """
+import os
 import random
 from kivy.clock import Clock
 from kivy.logger import Logger
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
+from kivy.uix.image import Image
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import Screen, ScreenManager
+
+from ui.photoboothstate import PhotoboothState
 
 LARGE_FONT = 130
 SMALL_FONT = 50
@@ -226,7 +230,14 @@ class CheeseScreen(Screen):
 class SelectingScreen(Screen):
     """Selecting state widget.
 
-    Defined in photobooth.kv
+    +-----------------+
+    |+------+ +------+|
+    ||  1   | |  2   ||
+    |+------+ +------+|
+    |+------+         |
+    ||  3   | |Print| |
+    |+------+ |Cancel||
+    +-----------------+
     """
     def __init__(self, app, **kwargs):
         """
@@ -239,7 +250,69 @@ class SelectingScreen(Screen):
         Logger.info('CheeseScreen: __init__().')
         super(SelectingScreen, self).__init__(**kwargs)
 
+        spacing = 10
+        button_padding = [40, 40, 40, 40]
+        photo_padding = [10, 10, 10, 10]
+
         self.app = app
+        self.image1 = Image()
+        self.image2 = Image()
+        self.image3 = Image()
+        self.print_button = Button(text='Print')
+        self.cancel_button = Button(text='Cancel')
+
+        self.print_button.bind(on_release=self.print_event)
+        self.cancel_button.bind(on_release=self.cancel_event)
+
+        top_row = BoxLayout(
+            orientation='horizontal',
+            spacing=spacing,
+            padding=photo_padding
+        )
+        top_row.add_widget(self.image1)
+        top_row.add_widget(self.image2)
+
+        button_layout = BoxLayout(
+            orientation='vertical',
+            spacing=spacing,
+            padding=button_padding
+        )
+        button_layout.add_widget(self.print_button)
+        button_layout.add_widget(self.cancel_button)
+
+        bottom_row = BoxLayout(orientation='horizontal', spacing=spacing)
+        bottom_row.add_widget(self.image3)
+        bottom_row.add_widget(button_layout)
+
+        self.layout = BoxLayout(orientation='vertical')
+        self.layout.add_widget(top_row)
+        self.layout.add_widget(bottom_row)
+
+        self.add_widget(self.layout)
+
+    def on_entry(self):
+        Logger.info('SelectingScreen: on_entry().')
+
+        self.image1.source = os.path.join(
+            self.app.photobuffer,
+            self.app.photonames[PhotoboothState.PHOTO1]
+        )
+        self.image2.source = os.path.join(
+            self.app.photobuffer,
+            self.app.photonames[PhotoboothState.PHOTO2]
+        )
+        self.image3.source = os.path.join(
+            self.app.photobuffer,
+            self.app.photonames[PhotoboothState.PHOTO3]
+        )
+
+    def cancel_event(self, obj):
+        Logger.info('SelectingScreen: cancel_event().')
+        self.app.cancel_event()
+
+    def print_event(self, obj):
+        Logger.info('SelectingScreen: print_event().')
+        self.app.print_event()
 
 
 class PrintingScreen(Screen):
