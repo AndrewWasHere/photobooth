@@ -45,6 +45,29 @@ def capture(filename):
     return saved
 
 
+def capture_background(filename):
+    """Capture image from camera to file in background task.
+
+    Args:
+        filename (str): File path to save image to.
+
+    Returns:
+        process (subprocess.Popen)
+    """
+    cmd = (
+        'gphoto2 '
+        '--capture-image-and-download '
+        '--filename {filename} '
+        '--keep '
+        '--force-overwrite'.format(
+           filename=filename
+        )
+    )
+    cmd = shlex.split(cmd)
+    process = subprocess.Popen(cmd)
+    return process
+
+
 def _parse_output(output):
     """Parse the gphoto2 output.
 

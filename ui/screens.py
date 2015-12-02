@@ -21,6 +21,8 @@ class ScreenMgr(ScreenManager):
     WAITING = 'waiting'
     COUNTDOWN = 'countdown'
     CHEESE = 'cheese'
+    SELECTING = 'selecting'
+    PRINTING = 'printing'
 
     def __init__(self, app, **kwargs):
         """
@@ -36,7 +38,9 @@ class ScreenMgr(ScreenManager):
         self.pb_screens = {
             self.WAITING: WaitingScreen(app, name=self.WAITING),
             self.COUNTDOWN: CountdownScreen(app, name=self.COUNTDOWN),
-            self.CHEESE: CheeseScreen(app, name=self.CHEESE)
+            self.CHEESE: CheeseScreen(app, name=self.CHEESE),
+            self.SELECTING: SelectingScreen(app, name=self.SELECTING),
+            self.PRINTING: PrintingScreen(app, name=self.PRINTING)
         }
         for screen in self.pb_screens.itervalues():
             self.add_widget(screen)
@@ -169,8 +173,16 @@ class CheeseScreen(Screen):
         self.layout.add_widget(self.smile_label)
         self.add_widget(self.layout)
 
-    def random_smile(self):
+    def on_entry(self):
         self.smile_label.text = random.choice(self.smile)
+        Clock.schedule_once(self.timer_event, 1)
+
+    def timer_event(self, obj):
+        Logger.info('CheeseScreen: timer_event()')
+        if self.app.camera_processing():
+            Clock.schedule_once(self.timer_event, 1)
+        else:
+            self.app.photo_complete_event()
 
 
 class SelectingScreen(Screen):
@@ -178,6 +190,18 @@ class SelectingScreen(Screen):
 
     Defined in photobooth.kv
     """
+    def __init__(self, app, **kwargs):
+        """
+        Args:
+            app:
+
+        Returns:
+
+        """
+        Logger.info('CheeseScreen: __init__().')
+        super(SelectingScreen, self).__init__(**kwargs)
+
+        self.app = app
 
 
 class PrintingScreen(Screen):
@@ -185,3 +209,15 @@ class PrintingScreen(Screen):
 
     Defined in photobooth.kv
     """
+    def __init__(self, app, **kwargs):
+        """
+        Args:
+            app:
+
+        Returns:
+
+        """
+        Logger.info('CheeseScreen: __init__().')
+        super(PrintingScreen, self).__init__(**kwargs)
+
+        self.app = app

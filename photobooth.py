@@ -8,88 +8,8 @@ https://opensource.org/licenses/BSD-3-Clause
 """
 import ConfigParser
 import argparse
-from kivy.app import App
-from kivy.logger import Logger
-from kivy.uix.screenmanager import NoTransition
 
-from ui import ScreenMgr
-
-
-class PhotoboothState(object):
-    WAITING = 'waiting state'
-    COUNTDOWN1 = 'countdown 1 state'
-    PHOTO1 = 'photo 1 state'
-    COUNTDOWN2 = 'countdown 2 state'
-    PHOTO2 = 'photo 2 state'
-    COUNTDOWN3 = 'countdown 3 state'
-    PHOTO3 = 'photo 3 state'
-    SELECTING = 'selecting state'
-    PRINTING = 'printing state'
-
-    def __init__(self):
-        self.state = self.WAITING
-        Logger.info('State Machine: Initialized to state %s', self.state)
-
-    def transition_to(self, new_state):
-        Logger.info(
-            'State Machine: Transitioning from "%s" to "%s"',
-            self.state,
-            new_state
-        )
-        self.state = new_state
-
-
-class PhotoboothApp(App):
-    def __init__(self, settings, **kwargs):
-        Logger.info('PhotoboothApp: __init__().')
-        super(PhotoboothApp, self).__init__(**kwargs)
-        self.settings = settings
-        self.sm = None
-        self.state_machine = PhotoboothState()
-        self.countdown = None
-
-    def build(self):
-        """Build UI.
-
-        User interface objects stored in the app must be created here, not in
-        __init__().
-        """
-        Logger.info('PhotoboothApp: build().')
-        self.sm = ScreenMgr(self, transition=NoTransition())
-        return self.sm
-
-    def start_event(self):
-        """Waiting screen start button pressed."""
-        Logger.info('PhotoboothApp: start_event().')
-        self.state_machine.transition_to(PhotoboothState.COUNTDOWN1)
-        self.sm.pb_screens[ScreenMgr.COUNTDOWN].start_countdown(
-            self.settings.initial_wait_time
-        )
-        self.sm.current = ScreenMgr.COUNTDOWN
-
-    def photo_event(self):
-        """Time to take a picture."""
-        Logger.info('PhotoboothApp: photo_event().')
-        if self.state_machine.state not in (
-            PhotoboothState.COUNTDOWN1,
-            PhotoboothState.COUNTDOWN2,
-            PhotoboothState.COUNTDOWN3
-        ):
-            Logger.error(
-                'photo event occurred unexpectedly in state %s',
-                self.state_machine.state
-            )
-            return
-
-        if self.state_machine.state == PhotoboothState.COUNTDOWN1:
-            self.state_machine.transition_to(PhotoboothState.PHOTO1)
-        elif self.state_machine.state == PhotoboothState.COUNTDOWN2:
-            self.state_machine.transition_to(PhotoboothState.PHOTO2)
-        else:
-            self.state_machine.transition_to(PhotoboothState.PHOTO3)
-
-        self.sm.pb_screens[ScreenMgr.CHEESE].random_smile()
-        self.sm.current = ScreenMgr.CHEESE
+from photoboothapp import PhotoboothApp
 
 
 class PhotoboothSettings(object):
@@ -145,7 +65,7 @@ def parse_command_line():
         wait_time=(
             args.wait_time
             if args.wait_time is not None else
-            config.getint('photobooth', 'initial-wait-time')
+            config.getint('photobooth', 'wait-time')
         )
     )
 
