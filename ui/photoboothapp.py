@@ -7,6 +7,9 @@ See LICENSE.txt at the root of the project or
 https://opensource.org/licenses/BSD-3-Clause
 """
 import os
+import shlex
+import subprocess
+
 from kivy.app import App
 from kivy.logger import Logger
 from kivy.uix.screenmanager import NoTransition
@@ -18,6 +21,7 @@ from ui.screens import ScreenMgr
 class PhotoboothApp(App):
     def __init__(self, settings, **kwargs):
         Logger.info('PhotoboothApp: __init__().')
+
         super(PhotoboothApp, self).__init__(**kwargs)
 
         self.settings = settings
@@ -41,12 +45,14 @@ class PhotoboothApp(App):
         __init__().
         """
         Logger.info('PhotoboothApp: build().')
+
         self.sm = ScreenMgr(self, transition=NoTransition())
         return self.sm
 
     def start_event(self):
         """Waiting screen start button pressed."""
         Logger.info('PhotoboothApp: start_event().')
+
         self.state_machine.transition_to(PhotoboothState.COUNTDOWN1)
         self.sm.pb_screens[ScreenMgr.COUNTDOWN].start_countdown(
             self.settings.initial_wait_time
@@ -56,6 +62,7 @@ class PhotoboothApp(App):
     def photo_event(self):
         """Time to take a picture."""
         Logger.info('PhotoboothApp: photo_event().')
+
         if self.state_machine.state not in (
             PhotoboothState.COUNTDOWN1,
             PhotoboothState.COUNTDOWN2,
@@ -154,15 +161,31 @@ class PhotoboothApp(App):
             self.state_machine.transition_to(PhotoboothState.WAITING)
             return
 
-        self.sm.pb_screen[ScreenMgr.PRINTING].on_entry()
+        self.sm.pb_screens[ScreenMgr.PRINTING].on_entry()
         self.sm.current = ScreenMgr.PRINTING
         self.state_machine.transition_to(PhotoboothState.PRINTING)
+
+    def capture_image(self, filename):
+        """Launch process to capture image with camera."""
+        Logger.info('PhotoboothApp: capture_image(%s).', filename)
+
+        cmd = (
+            'gphoto2 '
+            '--capture-image-and-download '
+            '--filename {filename} '
+            '--keep '
+            '--force-overwrite'.format(filename=filename)
+        )
+        cmd = shlex.split(cmd)
+        self.process = subprocess.Popen(cmd)
 
     def resize_images(self):
         """Launch processes to resize images."""
         def resized(name):
             base, ext = os.path.splitext(name)
             return '{base}_resized{ext}'.format(base=base, ext=ext)
+
+        Logger.info('PhotoboothApp: resize_images().')
 
         cmd = 'convert {src} -resize {width}x{height} {dest}'
         self.processes = [
@@ -179,33 +202,29 @@ class PhotoboothApp(App):
             for fname in self.photonames.itervalues()
         ]
 
-    def capture_image(self, filename):
-        """Launch process to capture image with camera."""
-        Logger.info('PhotoboothApp: capture_image(%s)', filename)
-
-        cmd = (
-            'gphoto2 '
-            '--capture-image-and-download '
-            '--filename {filename} '
-            '--keep '
-            '--force-overwrite'.format(filename=filename)
-        )
-        cmd = shlex.split(cmd)
-        self.process = subprocess.Popen(cmd)
-
     def compose_print(self):
         """Launch process to compose photo."""
+        Logger.info('PhotoboothApp: compose_print().')
+
+        self.processes = []
 
     def print_photo(self):
         """Launch process to print photo."""
+        Logger.info('PhotoboothApp: print_photo().')
+
+        self.processes = []
 
     def print_complete(self):
         """Print photo process complete."""
+        Logger.info('PhotoboothApp: print_complete().')
+
         self.sm.current = ScreenMgr.WAITING
         self.state_machine.transition_to(PhotoboothState.WAITING)
 
     def processing(self):
         """Check to see if we are still composing the photo."""
+        Logger.info('PhotoboothApp: processing()')
+
         if any((process.poll() is None for process in self.processes)):
             # Still processing.
             return True

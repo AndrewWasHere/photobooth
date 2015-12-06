@@ -360,7 +360,7 @@ class PrintingScreen(Screen):
         self.app.resize_images()
         Clock.schedule_once(self.timer_event, 0.5)
 
-    def timer_event(self):
+    def timer_event(self, obj):
         Logger.info('PrintingScreen: timer_event().')
         if self.idx == 0:
             # Resizing images.
