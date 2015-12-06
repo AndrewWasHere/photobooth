@@ -11,7 +11,6 @@ from kivy.app import App
 from kivy.logger import Logger
 from kivy.uix.screenmanager import NoTransition
 
-from camera import camera
 from ui.photoboothstate import PhotoboothState
 from ui.screens import ScreenMgr
 
@@ -25,7 +24,7 @@ class PhotoboothApp(App):
         self.sm = None
         self.state_machine = PhotoboothState()
         self.countdown = None
-        self.camera = None
+        self.processes = []
         self.photobuffer = '/tmp/photobooth'
         self.photonames = {
             PhotoboothState.PHOTO1: 'photo1.jpg',
@@ -82,7 +81,7 @@ class PhotoboothApp(App):
         self.sm.current = ScreenMgr.CHEESE
 
         # Take the picture.
-        self.camera = camera.capture_background(
+        self.capture_image(
             os.path.join(self.photobuffer, self.photonames[state])
         )
 
@@ -120,6 +119,7 @@ class PhotoboothApp(App):
         else:
             if self.settings.skip_select:
                 state = PhotoboothState.PRINTING
+                self.sm.pb_screen[ScreenMgr.PRINTING].on_entry()
                 self.sm.current = ScreenMgr.PRINTING
             else:
                 state = PhotoboothState.SELECTING
@@ -154,12 +154,59 @@ class PhotoboothApp(App):
             self.state_machine.transition_to(PhotoboothState.WAITING)
             return
 
+        self.sm.pb_screen[ScreenMgr.PRINTING].on_entry()
         self.sm.current = ScreenMgr.PRINTING
         self.state_machine.transition_to(PhotoboothState.PRINTING)
 
-    def camera_processing(self):
-        """Check to see if camera is still processing the photo."""
-        if self.camera and self.camera.poll() is None:
+    def resize_images(self):
+        """Launch processes to resize images."""
+        def resized(name):
+            base, ext = os.path.splitext(name)
+            return '{base}_resized{ext}'.format(base=base, ext=ext)
+
+        cmd = 'convert {src} -resize {width}x{height} {dest}'
+        self.processes = [
+            subprocess.Popen(
+                shlex.split(
+                    cmd.format(
+                        src=os.path.join(self.photobuffer, fname),
+                        width=880,
+                        height=580,
+                        dest=os.path.join(self.photobuffer, resized(fname))
+                    )
+                )
+            )
+            for fname in self.photonames.itervalues()
+        ]
+
+    def capture_image(self, filename):
+        """Launch process to capture image with camera."""
+        Logger.info('PhotoboothApp: capture_image(%s)', filename)
+
+        cmd = (
+            'gphoto2 '
+            '--capture-image-and-download '
+            '--filename {filename} '
+            '--keep '
+            '--force-overwrite'.format(filename=filename)
+        )
+        cmd = shlex.split(cmd)
+        self.process = subprocess.Popen(cmd)
+
+    def compose_print(self):
+        """Launch process to compose photo."""
+
+    def print_photo(self):
+        """Launch process to print photo."""
+
+    def print_complete(self):
+        """Print photo process complete."""
+        self.sm.current = ScreenMgr.WAITING
+        self.state_machine.transition_to(PhotoboothState.WAITING)
+
+    def processing(self):
+        """Check to see if we are still composing the photo."""
+        if any((process.poll() is None for process in self.processes)):
             # Still processing.
             return True
 

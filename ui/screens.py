@@ -208,6 +208,7 @@ class CheeseScreen(Screen):
         self.wait_count = 0
 
     def on_entry(self):
+        Logger.info('CheeseScreen: on_entry().')
         self.smile_label.font_size = LARGE_FONT
         self.smile_label.text = random.choice(self.smile)
         self.wait_idx = -1
@@ -215,8 +216,8 @@ class CheeseScreen(Screen):
         Clock.schedule_once(self.timer_event, 2)
 
     def timer_event(self, obj):
-        Logger.info('CheeseScreen: timer_event()')
-        if self.app.camera_processing():
+        Logger.info('CheeseScreen: timer_event().')
+        if self.app.processing():
             self.wait_count += 1
             if self.wait_count % 3 == 0:
                 self.wait_idx = (self.wait_idx + 1) % len(self.waiting)
@@ -256,7 +257,12 @@ class SelectingScreen(Screen):
         photo_padding = [10, 10, 10, 10]
 
         self.app = app
-        self.image1 = Image()
+        self.image1 = Image(
+            source=os.path.join(
+                self.app.photobuffer, 
+                self.app.photonames[PhotoboothState.PHOTO1]
+            )
+        )
         self.image2 = Image()
         self.image3 = Image()
         self.print_button = Button(text='Print', background_color=(0, 1, 0, 1))
@@ -294,10 +300,7 @@ class SelectingScreen(Screen):
     def on_entry(self):
         Logger.info('SelectingScreen: on_entry().')
 
-        self.image1.source = os.path.join(
-            self.app.photobuffer,
-            self.app.photonames[PhotoboothState.PHOTO1]
-        )
+        self.image1.reload()
         self.image2.source = os.path.join(
             self.app.photobuffer,
             self.app.photonames[PhotoboothState.PHOTO2]
@@ -319,8 +322,15 @@ class SelectingScreen(Screen):
 class PrintingScreen(Screen):
     """Printing state widget.
 
-    Defined in photobooth.kv
+    +-----------------+
+    |                 |
+    |   Printing...   |
+    |                 |
+    |                 |
+    +-----------------+
     """
+    status = ['Composing...', 'Composing...', 'Printing...']
+
     def __init__(self, app, **kwargs):
         """
         Args:
@@ -329,7 +339,50 @@ class PrintingScreen(Screen):
         Returns:
 
         """
-        Logger.info('CheeseScreen: __init__().')
+        Logger.info('PrintingScreen: __init__().')
         super(PrintingScreen, self).__init__(**kwargs)
 
         self.app = app
+        self.status = Label(
+            text=self.status[0],
+            halign='center',
+            valign='middle',
+            font_size=SMALL_FONT
+        )
+        layout = BoxLayout()
+        layout.add_widget(self.status)
+        self.add_widget(layout)
+
+        self.idx = 0
+
+    def on_entry(self):
+        Logger.info('PrintingScreen: on_entry().')
+        self.app.resize_images()
+        Clock.schedule_once(self.timer_event, 0.5)
+
+    def timer_event(self):
+        Logger.info('PrintingScreen: timer_event().')
+        if self.idx == 0:
+            # Resizing images.
+            if not self.app.processing():
+                self.idx += 1
+                self.app.compose_print()
+
+            Clock.schedule_once(self.timer_event, 0.5)
+
+        elif self.idx == 1:
+            # Composing print.
+            if not self.app.processing():
+                self.idx += 1
+                self.app.print_photo()
+
+            Clock.schedule_once(self.timer_event, 0.5)
+
+        elif self.idx == 2:
+            # Printing.
+            if not self.app.processing():
+                self.idx = 0
+                self.app.print_complete()
+            else:
+                Clock.schedule_once(self.timer_event, 0.5)
+
