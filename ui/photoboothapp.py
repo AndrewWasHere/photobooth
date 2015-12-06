@@ -126,7 +126,7 @@ class PhotoboothApp(App):
         else:
             if self.settings.skip_select:
                 state = PhotoboothState.PRINTING
-                self.sm.pb_screen[ScreenMgr.PRINTING].on_entry()
+                self.sm.pb_screens[ScreenMgr.PRINTING].on_entry()
                 self.sm.current = ScreenMgr.PRINTING
             else:
                 state = PhotoboothState.SELECTING
@@ -177,7 +177,7 @@ class PhotoboothApp(App):
             '--force-overwrite'.format(filename=filename)
         )
         cmd = shlex.split(cmd)
-        self.process = subprocess.Popen(cmd)
+        self.processes = [subprocess.Popen(cmd)]
 
     def resize_images(self):
         """Launch processes to resize images."""
