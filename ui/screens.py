@@ -82,7 +82,8 @@ class WaitingScreen(Screen):
             # text_size=self.size,
             halign='center',
             valign='top',
-            font_size=SMALL_FONT
+            font_size=SMALL_FONT,
+            background_color=(0, 0, 1, 1)
         )
         self.start_button.bind(on_release=self.start_event)
 
@@ -258,8 +259,8 @@ class SelectingScreen(Screen):
         self.image1 = Image()
         self.image2 = Image()
         self.image3 = Image()
-        self.print_button = Button(text='Print')
-        self.cancel_button = Button(text='Cancel')
+        self.print_button = Button(text='Print', background_color=(0, 1, 0, 1))
+        self.cancel_button = Button(text='Cancel', background_color=(1, 0, 0, 1))
 
         self.print_button.bind(on_release=self.print_event)
         self.cancel_button.bind(on_release=self.cancel_event)
