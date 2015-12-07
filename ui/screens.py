@@ -257,12 +257,7 @@ class SelectingScreen(Screen):
         photo_padding = [10, 10, 10, 10]
 
         self.app = app
-        self.image1 = Image(
-            source=os.path.join(
-                self.app.photobuffer, 
-                self.app.photonames[PhotoboothState.PHOTO1]
-            )
-        )
+        self.image1 = Image()
         self.image2 = Image()
         self.image3 = Image()
         self.print_button = Button(text='Print', background_color=(0, 1, 0, 1))
@@ -300,15 +295,9 @@ class SelectingScreen(Screen):
     def on_entry(self):
         Logger.info('SelectingScreen: on_entry().')
 
-        self.image1.reload()
-        self.image2.source = os.path.join(
-            self.app.photobuffer,
-            self.app.photonames[PhotoboothState.PHOTO2]
-        )
-        self.image3.source = os.path.join(
-            self.app.photobuffer,
-            self.app.photonames[PhotoboothState.PHOTO3]
-        )
+        self.image1.source = self.app.photonames[PhotoboothState.PHOTO1]
+        self.image2.source = self.app.photonames[PhotoboothState.PHOTO2]
+        self.image3.source = self.app.photonames[PhotoboothState.PHOTO3]
 
     def cancel_event(self, obj):
         Logger.info('SelectingScreen: cancel_event().')
@@ -329,7 +318,7 @@ class PrintingScreen(Screen):
     |                 |
     +-----------------+
     """
-    status = ['Composing...', 'Composing...', 'Printing...']
+    statuses = ['Resizing...', 'Montaging...', 'Compositing...', 'Printing...']
 
     def __init__(self, app, **kwargs):
         """
@@ -344,7 +333,7 @@ class PrintingScreen(Screen):
 
         self.app = app
         self.status = Label(
-            text=self.status[0],
+            text=self.statuses[0],
             halign='center',
             valign='middle',
             font_size=SMALL_FONT
@@ -366,22 +355,34 @@ class PrintingScreen(Screen):
             # Resizing images.
             if not self.app.processing():
                 self.idx += 1
-                self.app.compose_print()
+                self.status.text = self.statuses[self.idx]
+                self.app.compose_photo()
 
             Clock.schedule_once(self.timer_event, 0.5)
 
         elif self.idx == 1:
-            # Composing print.
+            # Montaging print.
             if not self.app.processing():
                 self.idx += 1
-                self.app.print_photo()
+                self.status.text = self.statuses[self.idx]
+                self.app.composite_photo()
 
             Clock.schedule_once(self.timer_event, 0.5)
 
         elif self.idx == 2:
+            # Compositing.
+            if not self.app.processing():
+                self.idx += 1
+                self.status.text = self.statuses[self.idx]
+                self.app.print_photo()
+
+            Clock.schedule_once(self.timer_event, 0.5)
+
+        else:
             # Printing.
             if not self.app.processing():
                 self.idx = 0
+                self.status.text = self.statuses[self.idx]
                 self.app.print_complete()
             else:
                 Clock.schedule_once(self.timer_event, 0.5)

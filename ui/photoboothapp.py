@@ -29,20 +29,34 @@ class PhotoboothApp(App):
         self.state_machine = PhotoboothState()
         self.countdown = None
         self.processes = []
-        self.photobuffer = '/tmp/photobooth'
+        photobuffer = '/tmp/photobooth'
         self.photonames = {
-            PhotoboothState.PHOTO1: 'photo1.jpg',
-            PhotoboothState.PHOTO2: 'photo2.jpg',
-            PhotoboothState.PHOTO3: 'photo3.jpg',
+            PhotoboothState.PHOTO1: os.path.join(photobuffer, 'photo1.jpg'),
+            PhotoboothState.PHOTO2: os.path.join(photobuffer, 'photo2.jpg'),
+            PhotoboothState.PHOTO3: os.path.join(photobuffer, 'photo3.jpg'),
         }
-        if not os.path.exists(self.photobuffer):
-            os.makedirs(self.photobuffer)
+        self.montage_image = os.path.join(photobuffer, 'montage.jpg')
+        self.canvas_image = os.path.join(photobuffer, 'canvas.jpg')
+        self.print_image = os.path.join(photobuffer, 'composite.jpg')
+        if not os.path.exists(photobuffer):
+            os.makedirs(photobuffer)
+
+        cmd = (
+            'convert '
+            '-size 1800x1200 '
+            'xc {color} '
+            '{filename}'.format(
+                color=self.settings.background_color,
+                filename=self.canvas_image
+            )
+        )
+        subprocess.call(shlex.split(cmd))
 
     def build(self):
         """Build UI.
 
-        User interface objects stored in the photoboothapp must be created here, not in
-        __init__().
+        User interface objects stored in the photoboothapp must be created here,
+        not in __init__().
         """
         Logger.info('PhotoboothApp: build().')
 
@@ -88,9 +102,7 @@ class PhotoboothApp(App):
         self.sm.current = ScreenMgr.CHEESE
 
         # Take the picture.
-        self.capture_image(
-            os.path.join(self.photobuffer, self.photonames[state])
-        )
+        self.capture_image(self.photonames[state])
 
         self.state_machine.transition_to(state)
 
@@ -181,10 +193,6 @@ class PhotoboothApp(App):
 
     def resize_images(self):
         """Launch processes to resize images."""
-        def resized(name):
-            base, ext = os.path.splitext(name)
-            return '{base}_resized{ext}'.format(base=base, ext=ext)
-
         Logger.info('PhotoboothApp: resize_images().')
 
         cmd = 'convert {src} -resize {width}x{height} {dest}'
@@ -192,21 +200,51 @@ class PhotoboothApp(App):
             subprocess.Popen(
                 shlex.split(
                     cmd.format(
-                        src=os.path.join(self.photobuffer, fname),
+                        src=fname,
                         width=880,
                         height=580,
-                        dest=os.path.join(self.photobuffer, resized(fname))
+                        dest=self.resized(fname)
                     )
                 )
             )
             for fname in self.photonames.itervalues()
         ]
 
-    def compose_print(self):
+    def compose_photo(self):
         """Launch process to compose photo."""
         Logger.info('PhotoboothApp: compose_print().')
 
-        self.processes = []
+        cmd = (
+            'montage {photo1} {photo2} {photo3} {logo} '
+            '-mode concatenate '
+            '-tile 2 '
+            '-frame 10 '
+            '-mattecolor none '
+            '-background {background_color} '
+            '{dest}'.format(
+                photo1=self.resized(self.photonames[PhotoboothState.PHOTO1]),
+                photo2=self.resized(self.photonames[PhotoboothState.PHOTO2]),
+                photo3=self.resized(self.photonames[PhotoboothState.PHOTO3]),
+                logo=self.settings.logo,
+                background_color=self.settings.background_color,
+                dest=self.montage_image
+            )
+        )
+        self.processes = [subprocess.Popen(shlex.split(cmd))]
+
+    def composite_photo(self):
+        Logger.info('PhotoboothApp: composite_print().')
+
+        cmd = (
+            'composite '
+            '-gravity center '
+            '{montage} {canvas} {composite}'.format(
+                montage=self.montage_image,
+                canvas=self.canvas_image,
+                composite=self.print_image
+            )
+        )
+        self.processes = [subprocess.Popen(shlex.split(cmd))]
 
     def print_photo(self):
         """Launch process to print photo."""
@@ -223,10 +261,15 @@ class PhotoboothApp(App):
 
     def processing(self):
         """Check to see if we are still composing the photo."""
-        Logger.info('PhotoboothApp: processing()')
+        Logger.info('PhotoboothApp: processing().')
 
         if any((process.poll() is None for process in self.processes)):
             # Still processing.
             return True
 
         return False
+
+    @staticmethod
+    def resized(name):
+        base, ext = os.path.splitext(name)
+        return '{base}_resized{ext}'.format(base=base, ext=ext)

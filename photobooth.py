@@ -8,16 +8,26 @@ https://opensource.org/licenses/BSD-3-Clause
 """
 import ConfigParser
 import argparse
+import os
 
 from ui.photoboothapp import PhotoboothApp
 
 
 class PhotoboothSettings(object):
     """Container for settings."""
-    def __init__(self, skip_select, initial_wait_time, wait_time):
+    def __init__(
+        self,
+        skip_select,
+        initial_wait_time,
+        wait_time,
+        background_color,
+        logo
+    ):
         self.skip_select = skip_select
         self.initial_wait_time = initial_wait_time
         self.wait_time = wait_time
+        self.background_color = background_color
+        self.logo = os.path.abspath(os.path.expanduser(logo)) if logo else logo
 
 
 def parse_command_line():
@@ -48,6 +58,20 @@ def parse_command_line():
         default=None,
         help='Time to wait between photos, after camera processing complete.'
     )
+    parser.add_argument(
+        '--background-color',
+        default=None,
+        help='Background color of photobooth print. Supported values are listed '
+             'on http://www.imagemagick.org/script/color.php. You can also '
+             'supply an RGB, or RGBA value using the notation "rgb(r, g, b)" '
+             'or "rgba(r, g, b, a)", where r, g, b are integers between 0 and '
+             '255, and a is a float between 0.0 and 1.0.'
+    )
+    parser.add_argument(
+        '--logo',
+        default=None,
+        help='Path to logo to print on photograph.'
+    )
     args = parser.parse_args()
     if args.config:
         config.read(args.config)
@@ -66,6 +90,16 @@ def parse_command_line():
             args.wait_time
             if args.wait_time is not None else
             config.getint('photobooth', 'wait-time')
+        ),
+        background_color=(
+            args.background_color
+            if args.background_color is not None else
+            config.get('photobooth', 'background-color')
+        ),
+        logo=(
+            args.logo
+            if args.logo is not None else
+            config.get('photobooth', 'logo')
         )
     )
 
