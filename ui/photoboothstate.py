@@ -22,11 +22,11 @@ class PhotoboothState(object):
 
     def __init__(self):
         self.state = self.WAITING
-        Logger.info('State Machine: Initialized to state %s', self.state)
+        Logger.info('State Machine: Initialized to state %s.', self.state)
 
     def transition_to(self, new_state):
         Logger.info(
-            'State Machine: Transitioning from "%s" to "%s"',
+            'State Machine: Transitioning from "%s" to "%s".',
             self.state,
             new_state
         )
