@@ -8,11 +8,14 @@ https://opensource.org/licenses/BSD-3-Clause
 """
 import os
 import shlex
+import shutil
 import subprocess
 
 from kivy.app import App
 from kivy.logger import Logger
 from kivy.uix.screenmanager import NoTransition
+
+import datetime
 
 from ui.photoboothstate import PhotoboothState
 from ui.screens import ScreenMgr
@@ -40,6 +43,9 @@ class PhotoboothApp(App):
         self.print_image = os.path.join(photobuffer, 'composite.jpg')
         if not os.path.exists(photobuffer):
             os.makedirs(photobuffer)
+
+        if self.settings.save and not os.path.exists(self.settings.save):
+            os.makedirs(self.settings.save)
 
         cmd = (
             'convert '
@@ -250,16 +256,30 @@ class PhotoboothApp(App):
         """Launch process to print photo."""
         Logger.info('PhotoboothApp: print_photo().')
 
-        cmd = (
-            'lp '
-            '-d {printer} '
-            '{photo}'.format(
-                printer=self.settings.printer, 
-                photo=self.print_image
+        if self.settings.save:
+            dest = os.path.join(
+                self.settings.save,
+                'img_{}.jpg'.format(
+                    datetime.datetime.now().strftime('%H%M%S')
+                )
             )
-        )
-        Logger.info('Printing using command: %s', cmd)
-        self.processes = [subprocess.Popen(shlex.split(cmd))]
+            Logger.info('Saving photo to %s.', dest)
+            shutil.copy(self.print_image, dest)
+
+        if self.settings.printer:
+            cmd = (
+                'lp '
+                '-d {printer} '
+                '{photo}'.format(
+                    printer=self.settings.printer,
+                    photo=self.print_image
+                )
+            )
+            Logger.info('Printing photo. %s', cmd)
+            self.processes = [subprocess.Popen(shlex.split(cmd))]
+
+        else:
+            self.processes = []
 
     def print_complete(self):
         """Print photo process complete."""
@@ -269,7 +289,7 @@ class PhotoboothApp(App):
         self.state_machine.transition_to(PhotoboothState.WAITING)
 
     def processing(self):
-        """Check to see if we are still composing the photo."""
+        """Check to see if we are still background processing anything."""
         Logger.info('PhotoboothApp: processing().')
 
         if any((process.poll() is None for process in self.processes)):

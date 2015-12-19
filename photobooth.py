@@ -10,6 +10,8 @@ import ConfigParser
 import argparse
 import os
 
+import datetime
+
 from ui.photoboothapp import PhotoboothApp
 
 
@@ -18,6 +20,7 @@ class PhotoboothSettings(object):
     def __init__(
         self,
         skip_select,
+        save,
         initial_wait_time,
         wait_time,
         background_color,
@@ -25,6 +28,17 @@ class PhotoboothSettings(object):
         printer
     ):
         self.skip_select = skip_select
+        if save:
+            save = os.path.abspath(os.path.expanduser(save))
+            self.save = os.path.join(
+                save,
+                'photobooth_{}'.format(
+                    datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                )
+            )
+        else:
+            self.save = save
+
         self.initial_wait_time = initial_wait_time
         self.wait_time = wait_time
         self.background_color = background_color
@@ -35,7 +49,8 @@ class PhotoboothSettings(object):
 def parse_command_line():
     """Get settings from command line and/or config file."""
     config = ConfigParser.RawConfigParser()
-    config.readfp(open('photobooth_defaults.cfg'))
+    with open('photobooth_defaults.cfg') as fp:
+        config.readfp(fp)
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -47,6 +62,13 @@ def parse_command_line():
         '--skip-select',
         action='store_true',
         help='Skip photo selection, and print all.'
+    )
+    parser.add_argument(
+        '--save',
+        default=None,
+        help='Save composite photos to this directory. Photos are not saved if '
+             'this flag is not specified. A new directory titled '
+             'photobooth_<timestamp> will be added to the specified directory.'
     )
     parser.add_argument(
         '--initial-wait-time',
@@ -77,7 +99,9 @@ def parse_command_line():
     parser.add_argument(
         '--printer',
         default=None,
-        help='Printer to print photos on.'
+        help='Printer to print photos on. If not specified, photobooth will '
+             'not print the photos (might want to use the --save flag in this '
+             'case.'
     )
 
     args = parser.parse_args()
@@ -88,6 +112,10 @@ def parse_command_line():
         skip_select=(
             args.skip_select or
             config.getboolean('photobooth', 'skip-select')
+        ),
+        save=(
+            args.save or
+            config.get('photobooth', 'save')
         ),
         initial_wait_time=(
             args.initial_wait_time
