@@ -250,7 +250,16 @@ class PhotoboothApp(App):
         """Launch process to print photo."""
         Logger.info('PhotoboothApp: print_photo().')
 
-        self.processes = []
+        cmd = (
+            'lp '
+            '-d {printer} '
+            '{photo}'.format(
+                printer=self.settings.printer, 
+                photo=self.print_image
+            )
+        )
+        Logger.info('Printing using command: %s', cmd)
+        self.processes = [subprocess.Popen(shlex.split(cmd))]
 
     def print_complete(self):
         """Print photo process complete."""

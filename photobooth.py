@@ -21,13 +21,15 @@ class PhotoboothSettings(object):
         initial_wait_time,
         wait_time,
         background_color,
-        logo
+        logo,
+        printer
     ):
         self.skip_select = skip_select
         self.initial_wait_time = initial_wait_time
         self.wait_time = wait_time
         self.background_color = background_color
         self.logo = os.path.abspath(os.path.expanduser(logo)) if logo else logo
+        self.printer = printer
 
 
 def parse_command_line():
@@ -72,6 +74,12 @@ def parse_command_line():
         default=None,
         help='Path to logo to print on photograph.'
     )
+    parser.add_argument(
+        '--printer',
+        default=None,
+        help='Printer to print photos on.'
+    )
+
     args = parser.parse_args()
     if args.config:
         config.read(args.config)
@@ -100,6 +108,11 @@ def parse_command_line():
             args.logo
             if args.logo is not None else
             config.get('photobooth', 'logo')
+        ),
+        printer=(
+            args.printer
+            if args.logo is not None else
+            config.get('photobooth', 'printer')
         )
     )
 
