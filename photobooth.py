@@ -25,7 +25,9 @@ class PhotoboothSettings(object):
         wait_time,
         background_color,
         logo,
-        printer
+        printer,
+        image_width,
+        image_height
     ):
         self.skip_select = skip_select
         if save:
@@ -44,6 +46,8 @@ class PhotoboothSettings(object):
         self.background_color = background_color
         self.logo = os.path.abspath(os.path.expanduser(logo)) if logo else logo
         self.printer = printer
+        self.image_width = image_width
+        self.image_height = image_height
 
 
 def parse_command_line():
@@ -103,6 +107,18 @@ def parse_command_line():
              'not print the photos (might want to use the --save flag in this '
              'case.'
     )
+    parser.add_argument(
+        '--image-width',
+        default=None,
+        help='Final image width in pixels. Use a dimension that works best for '
+             'your photo printer.'
+    )
+    parser.add_argument(
+        '--image-height',
+        default=None,
+        help='Final image height in pixels. Use a dimension that works best '
+             'for your photo printer.'
+    )
 
     args = parser.parse_args()
     if args.config:
@@ -139,9 +155,20 @@ def parse_command_line():
         ),
         printer=(
             args.printer
-            if args.logo is not None else
+            if args.printer is not None else
             config.get('photobooth', 'printer')
+        ),
+        image_width=(
+            args.image_width
+            if args.image_width is not None else
+            config.get('photobooth', 'image-width')
+        ),
+        image_height=(
+            args.image_height
+            if args.image_height is not None else
+            config.get('photobooth', 'image-height')
         )
+
     )
 
 

@@ -49,9 +49,11 @@ class PhotoboothApp(App):
 
         cmd = (
             'convert '
-            '-size 1800x1200 '
+            '-size {width}x{height} '
             'xc: {color} '
             '{filename}'.format(
+                width=self.settings.image_width,
+                height=self.settings.image_height,
                 color=self.settings.background_color,
                 filename=self.canvas_image
             )
