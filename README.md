@@ -1,5 +1,4 @@
-Photobooth
-==========
+# Photobooth
 
 A Raspberry Pi photobooth application.
 
@@ -9,8 +8,7 @@ For a list of command line arguments, run photobooth with the -h flag:
 
     $ python photobooth -h
 
-Requirements
-------------
+## Requirements
 
 * Raspberry Pi running Raspian Jessie or newer.
 * Raspberry Pi touchscreen.
@@ -23,8 +21,14 @@ Requirements
 * Lots of light.
 * Props!
 
-License
--------
+## Notes
+
+Installing printers on the Raspberry Pi:
+http://www.howtogeek.com/169679/how-to-add-a-printer-to-your-raspberry-pi-or-other-linux-computer/
+
+Administering printers from browser: http://<ip address of pi>:631
+
+## License
 
 Copyright 2015, Andrew Lin.
 All rights reserved.
