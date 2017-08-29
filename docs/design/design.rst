@@ -77,12 +77,12 @@ a photo-taking state, a photo selecting state, and a printing state.
 Libraries
 =========
 
-Two libraries are used by Photobooth: gphoto2 and Kivy.
+Three libraries are used by Photobooth: gphoto2, ImageMagick, and Kivy.
 
 gPhoto2
 -------
 
-http://www.gphoto.org/
+http://gphoto.org/
 
 gPhoto2 is a library to control digital cameras with a computer over USB. Camera
 settings can be modified, pictures taken, and photos downloaded off the camera
@@ -91,6 +91,17 @@ using gPhoto2 interfaces.
 There are a couple gPhoto2 Python bindings available. I didn't like either of
 them, so I just wrapped the command line interfaces I needed with Python
 functions.
+
+ImageMagick
+-----------
+
+http://imagemagick.org
+
+ImageMagick is an image creation and manipulation library. In Photobooth, it is
+used to scale and montage four images into one for printing.
+
+Like with gphoto2, there are Python bindings, but I opted to just wrap the
+command line commands I needed to do the job.
 
 Kivy
 ----
